@@ -9,7 +9,7 @@ import edu.dlut.software.cagetian.util.UncompressFileGZIP;
 import java.io.*;
 import java.net.Socket;
 import java.util.Properties;
-import java.util.zip.GZIPInputStream;
+
 
 
 /**
@@ -19,7 +19,8 @@ public class FileClient  {
     private String serverIP;
     private int server_port;
     private String client_name;
-    FileClient(File f) throws IOException {
+
+    private FileClient(File f) throws IOException {
         getProperties(f);
     }
 
@@ -42,14 +43,14 @@ public class FileClient  {
                     fileClient.upload(args[1]);
                     break;
                 default:
-                    System.out.println("no param like " + args[0]);
+                    System.err.println("no param like " + args[0]);
                     break;
             }
         }
 
     }
 
-    public void upload(String file_path) {
+    private void upload(String file_path) {
         File file = new File(file_path);
         File z_file=CompressFileGZIP.doCompressFile(file_path);
         FileInfo fileInfo;
@@ -61,18 +62,16 @@ public class FileClient  {
             fileInfo.setFile_size(z_file.length());
             System.out.println(fileInfo);
         } catch (Exception e) {
-            System.out.println("fail to connect server to get update information.please retry");
+            System.err.println("fail to connect server to get update information.please retry");
             return;
         }
         try {
             send(fileInfo, z_file, fileInfo.getMain_node());
-        }catch (Exception e){
-            try {
-                send(fileInfo, z_file, fileInfo.getSec_node());
-            } catch (Exception e1) {
-                e1.printStackTrace();
+            if (z_file.delete()) {
+                System.out.println("deleted the temp file");
             }
-
+        }catch (Exception e){
+            System.err.println("upload to node erro please check your internet");
         }
     }
 
@@ -86,18 +85,16 @@ public class FileClient  {
         oos.flush();
 
         System.out.println("======== 开始传输文件 ========");
-        byte[] bytes = new byte[2048];
+        byte[] bytes = new byte[1024 * 128];
         int length;
         long progress = 0;
-        byte[]byte_tmp;
-        int encrypt_len;
         while ((length = fis.read(bytes, 0, bytes.length)) != -1) {
 
-            byte_tmp=Tool.encrypt(bytes);
-            encrypt_len=byte_tmp.length;
-            oos.writeInt(encrypt_len);
+            bytes = Tool.encrypt(bytes);
+            length = bytes.length;
+            oos.writeInt(length);
             oos.flush();
-            oos.write(byte_tmp, 0, encrypt_len);
+            oos.write(bytes, 0, length);
             oos.flush();
             progress += length;
             System.out.print("| " + (100 * progress / file.length()) + "% |");
@@ -128,7 +125,7 @@ public class FileClient  {
         socket.close();
     }
 
-    public void download(String uuid, String file_path) {
+    private void download(String uuid, String file_path) {
         File directory;
         Socket socket;
         FileInfo fileInfo;

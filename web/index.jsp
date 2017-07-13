@@ -37,7 +37,7 @@
 
           i = Math.floor(Math.log(bytes) / Math.log(k));
 
-          return (bytes / Math.pow(k, i)).toPrecision(6) + ' ' + sizes[i];
+          return (bytes / Math.pow(k, i)).toPrecision(5) + ' ' + sizes[i];
           //toPrecision(3) 后面保留一位小数，如1.0GB                                                                                                                  //return (bytes / Math.pow(k, i)).toPrecision(3) + ' ' + sizes[i];
       }
       window.setInterval("getTable();",5000);
@@ -52,27 +52,27 @@
                   var s1=null;
                   var s2=null;
                   if(result) {
-                      for(var i=0;i<result.nodes.length;i++){
+                      for (var j = 0; j < result.nodes.length; j++) {
                           s1+="<tr>" +
-                              "<td>" + (i+1)+ "</td>" +
-                              "<td>" + result.nodes[i].nodeName+ "</td>" +
-                              "<td>" + result.nodes[i].nodeIP+ "</td>" +
-                              "<td>" + result.nodes[i].nodePort+ "</td>" +
-                              "<td>" + bytesToSize(result.nodes[i].volume)+ "</td>" +
-                              "<td>" + bytesToSize(result.nodes[i].restVolume)+ "</td>" +
-                              "<td>" + result.nodes[i].file_num+ "</td>" +
+                              "<td>" + (j + 1) + "</td>" +
+                              "<td>" + result.nodes[j].nodeName + "</td>" +
+                              "<td>" + result.nodes[j].nodeIP + "</td>" +
+                              "<td>" + result.nodes[j].nodePort + "</td>" +
+                              "<td>" + bytesToSize(result.nodes[j].volume) + "</td>" +
+                              "<td>" + bytesToSize(result.nodes[j].restVolume) + "</td>" +
+                              "<td>" + result.nodes[j].file_num + "</td>" +
                               "<td>yes </td>" +
                               "</tr>";
                       }
-                      for(var i=0;i<result.files.length;i++){
+                      for (var j = 0; j < result.files.length; j++) {
                           s2+="<tr>" +
-                              "<td>" + (i+1)+ "</td>" +
-                              "<td>" + result.files[i].file_id+ "</td>" +
-                              "<td>" + result.files[i].file_name+ "</td>" +
-                              "<td>" + bytesToSize(result.files[i].file_size)+ "</td>" +
-                              "<td>" + result.files[i].main_node.nodeName+ "</td>" +
-                              "<td>" + result.files[i].sec_node.nodeName+ "</td>" +
-                              "<td>" + result.files[i].client_name+ "</td>" +
+                              "<td>" + (j + 1) + "</td>" +
+                              "<td>" + result.files[j].file_id + "</td>" +
+                              "<td>" + result.files[j].file_name + "</td>" +
+                              "<td>" + bytesToSize(result.files[j].file_size) + "</td>" +
+                              "<td>" + result.files[j].main_node.nodeName + "</td>" +
+                              "<td>" + result.files[j].sec_node.nodeName + "</td>" +
+                              "<td>" + result.files[j].client_name + "</td>" +
                               "</tr>";
                       }
 //                        alert(s1);
