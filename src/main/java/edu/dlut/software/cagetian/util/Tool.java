@@ -1,4 +1,4 @@
-package edu.dlut.software.cagetian;/*package com.nmbox.common;*/
+package edu.dlut.software.cagetian.util;/*package com.nmbox.common;*/
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;

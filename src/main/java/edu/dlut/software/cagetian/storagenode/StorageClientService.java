@@ -137,40 +137,54 @@ public class StorageClientService implements Runnable {
         }
         File file = new File(directory.getAbsolutePath()+File.separatorChar + file_uuid);
         FileOutputStream fos = new FileOutputStream(file);
+        DataOutputStream dos=new DataOutputStream(fos);
+        DataInputStream dis=new DataInputStream(ois);
 
-        byte[] bytes = new byte[1024];
-        int length;
-        while ((length = ois.read(bytes, 0, bytes.length)) != -1) {
-            fos.write(bytes, 0, length);
-            fos.flush();
+        byte[] bytes;
+        int length=ois.readInt();
+        while (length != -1) {
+            bytes=new byte[length];
+            ois.readFully(bytes,0,length);
+            dos.writeInt(length);
+            dos.flush();
+            dos.write(bytes, 0, length);
+            dos.flush();
+            length=ois.readInt();
         }
-        fileInfo.setFile(file);
+        dos.writeInt(-1);
+        dos.flush();
+        dos.close();
         ois.close();
         fos.close();
+        fileInfo.setFile(file);
         return fileInfo;
     }
 
     private void send(File file, ObjectOutputStream oos) throws Exception {
         FileInputStream fis=new FileInputStream(file);
-        oos.writeUTF(file.getName());
-        oos.flush();
-        oos.writeLong(file.length());
-        oos.flush();
+        DataInputStream dis=new DataInputStream(fis);
 
         System.out.println("======== 开始传输文件 ========");
-        byte[] bytes = new byte[1024];
+        byte[] bytes;
         int length;
         long progress = 0;
-        while((length = fis.read(bytes, 0, bytes.length)) != -1) {
+        while((length = dis.readInt()) != -1) {
+            oos.writeInt(length);
+            oos.flush();
+            bytes=new byte[length];
+            dis.readFully(bytes,0,length);
             oos.write(bytes, 0, length);
             oos.flush();
             progress += length;
             System.out.print("| " + (100*progress/file.length()) + "% |");
         }
+        oos.writeInt(-1);
         System.out.println();
         System.out.println("======== 文件传输成功 ========");
         fis.close();
+        fis.close();
         oos.close();
+
 
     }
 }

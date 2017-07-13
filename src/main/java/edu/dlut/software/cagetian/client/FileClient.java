@@ -2,10 +2,14 @@ package edu.dlut.software.cagetian.client;
 
 import edu.dlut.software.cagetian.FileInfo;
 import edu.dlut.software.cagetian.storagenode.StorageNode;
+import edu.dlut.software.cagetian.util.CompressFileGZIP;
+import edu.dlut.software.cagetian.util.Tool;
+import edu.dlut.software.cagetian.util.UncompressFileGZIP;
 
 import java.io.*;
 import java.net.Socket;
 import java.util.Properties;
+import java.util.zip.GZIPInputStream;
 
 
 /**
@@ -47,23 +51,24 @@ public class FileClient  {
 
     public void upload(String file_path) {
         File file = new File(file_path);
+        File z_file=CompressFileGZIP.doCompressFile(file_path);
         FileInfo fileInfo;
         Socket socket;
         try {
             socket = new Socket(serverIP, server_port);
             fileInfo = getServerMes(socket, 'u', file.getName() + "#" +
-                    String.valueOf(file.length()));
-            fileInfo.setFile_size(file.length());
+                    String.valueOf(z_file.length()));
+            fileInfo.setFile_size(z_file.length());
             System.out.println(fileInfo);
         } catch (Exception e) {
             System.out.println("fail to connect server to get update information.please retry");
             return;
         }
         try {
-            send(fileInfo, file, fileInfo.getMain_node());
+            send(fileInfo, z_file, fileInfo.getMain_node());
         }catch (Exception e){
             try {
-                send(fileInfo, file, fileInfo.getSec_node());
+                send(fileInfo, z_file, fileInfo.getSec_node());
             } catch (Exception e1) {
                 e1.printStackTrace();
             }
@@ -79,20 +84,31 @@ public class FileClient  {
         oos.flush();
         oos.writeObject(fileInfo);
         oos.flush();
+
         System.out.println("======== 开始传输文件 ========");
-        byte[] bytes = new byte[1024];
+        byte[] bytes = new byte[2048];
         int length;
         long progress = 0;
+        byte[]byte_tmp;
+        int encrypt_len;
         while ((length = fis.read(bytes, 0, bytes.length)) != -1) {
-            oos.write(bytes, 0, length);
+
+            byte_tmp=Tool.encrypt(bytes);
+            encrypt_len=byte_tmp.length;
+            oos.writeInt(encrypt_len);
+            oos.flush();
+            oos.write(byte_tmp, 0, encrypt_len);
             oos.flush();
             progress += length;
             System.out.print("| " + (100 * progress / file.length()) + "% |");
         }
+        oos.writeInt(-1);
+        oos.flush();
         System.out.println();
-        System.out.println("======== 文件传输成功 ========");
+        System.out.println("======== 文件传输成功 ========"+file.length());
         oos.close();
         socket.close();
+
     }
 
     private void remove(String uuid) throws Exception {
@@ -148,28 +164,32 @@ public class FileClient  {
         oos.flush();
         oos.writeUTF(client_name);
         oos.flush();
+        ObjectInputStream ois=new ObjectInputStream(socket.getInputStream());
 
-        ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
-        String file_id = ois.readUTF();
-        Long fileLength = ois.readLong();
         if (!directory.exists()) {
             directory.mkdir();
         }
         File file = new File(directory.getAbsolutePath()
-                + File.separatorChar + fileInfo.getFile_name());
+                + File.separatorChar + fileInfo.getFile_name()+ ".gz");
         FileOutputStream fos = new FileOutputStream(file);
 
-        byte[] bytes = new byte[1024];
+        byte[] bytes;
         int length;
-        while ((length = ois.read(bytes, 0, bytes.length)) != -1) {
-            fos.write(bytes, 0, length);
+        while ((length=ois.readInt())!= -1) {
+            bytes=new byte[length];
+            ois.readFully(bytes,0,length);
+            bytes=Tool.decrypt(bytes);
+            fos.write(bytes, 0, bytes.length);
             fos.flush();
         }
-        System.out.println("======== 文件下载成功 [File Name："
-                + fileInfo.getFile_name() + "] [Size：" + fileLength + "] ========");
         oos.close();
         fos.close();
         ois.close();
+        File row_file= UncompressFileGZIP.doUncompressFile(file.toString());
+        if(file.delete())
+            System.out.println("delete zip file");
+        System.out.println("======== 文件下载成功 [File Name：" + fileInfo.getFile_name()
+                + "] [zip size：" + file.length() + "] ====[row size: "+row_file.length()+"]====");
         socket.close();
     }
 
