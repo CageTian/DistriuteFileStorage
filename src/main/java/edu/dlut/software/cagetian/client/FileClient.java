@@ -4,10 +4,9 @@ import edu.dlut.software.cagetian.FileInfo;
 import edu.dlut.software.cagetian.storagenode.StorageNode;
 
 import java.io.*;
-import java.net.InetAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.Properties;
+
 
 /**
  * Created by CageTian on 2017/7/6.
@@ -27,7 +26,7 @@ public class FileClient  {
                     "\t\n-u file_path -------- upload file to server");
         else {
             FileClient fileClient = new FileClient(new File(
-                    "D:\\Projects\\DistriuteFileStorage\\src\\main\\resources\\client1.properties"));
+                    "D:\\Projects\\Projects_JavaWeb\\DistriuteFileStorage\\src\\main\\resources\\client1.properties"));
             switch (args[0]) {
                 case "-d":
                     fileClient.download(args[1], args[2]);
