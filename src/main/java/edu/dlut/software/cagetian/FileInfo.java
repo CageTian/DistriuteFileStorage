@@ -20,12 +20,13 @@ public class FileInfo implements Serializable{
     public FileInfo() {
     }
 
-    public FileInfo(String file_id, String file_name, long file_size, StorageNode main_node, StorageNode sec_node) {
+    public FileInfo(String file_id, String file_name, String client_name, long file_size, StorageNode main_node, StorageNode sec_node) {
         this.file_id = file_id;
         this.file_name = file_name;
         this.file_size = file_size;
         this.main_node = main_node;
         this.sec_node = sec_node;
+        this.client_name = client_name;
     }
 
     public static FileInfo getNodeInitInstance(String file_id, String client_name, long file_size, File file) {
