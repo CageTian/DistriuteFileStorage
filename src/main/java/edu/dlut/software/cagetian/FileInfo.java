@@ -7,6 +7,7 @@ import java.io.Serializable;
 
 /**
  * Created by CageTian on 2017/7/6.
+ * 该类用于存储服务器端所需的文件信息：uuid，文件原名称，主存节点名称，备份节点名称，所属用户名，所指向的文件（可选）
  */
 public class FileInfo implements Serializable{
     private String file_id;
@@ -29,6 +30,16 @@ public class FileInfo implements Serializable{
         this.client_name = client_name;
     }
 
+    /**
+     * 节点初始化准备的静态工厂
+     * 返回节点初始化的FileInfo对象
+     *
+     * @param file_id
+     * @param client_name
+     * @param file_size
+     * @param file
+     * @return
+     */
     public static FileInfo getNodeInitInstance(String file_id, String client_name, long file_size, File file) {
         FileInfo fileInfo = new FileInfo();
         fileInfo.setFile_id(file_id);

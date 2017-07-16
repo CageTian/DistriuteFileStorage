@@ -1,21 +1,36 @@
 package edu.dlut.software.cagetian.storagenode;
+
 import edu.dlut.software.cagetian.FileInfo;
+
 import java.io.*;
 import java.net.Socket;
 
 /**
  * Created by CageTian on 2017/7/8.
+ * StorageNode的客户服务线程类
+ * 响应客户发来的上传、下载、删除请求
  */
 public class StorageClientService implements Runnable {
     private StorageNode storageNode;
     private Socket socket;
 
-
+    /**
+     * 构造函数
+     *
+     * @param storageNode 节点类的对象
+     * @param socket      节点响应客户端请求的套接字
+     */
     public StorageClientService(StorageNode storageNode, Socket socket) {
         this.storageNode = storageNode;
         this.socket = socket;
     }
 
+    /**
+     * 响应客户端的下载请求<br>
+     * 从客户端用户文件夹下寻找文件并传输给客户端
+     * @param ois 传入的对象输入流
+     * @throws Exception
+     */
     public void clientDownload(ObjectInputStream ois) throws Exception {
         String file_uuid = ois.readUTF();
         String client_name = ois.readUTF();
@@ -26,6 +41,12 @@ public class StorageClientService implements Runnable {
             send(file, new ObjectOutputStream(socket.getOutputStream()));
     }
 
+    /**
+     * clientUpload的内部函数<br>
+     * 负责将文件传输至备份节点
+     * @param fileInfo
+     * @throws Exception
+     */
     private void backUpToBNode(FileInfo fileInfo) throws Exception {
         StorageNode bNode=fileInfo.getSec_node();
         if (!bNode.equals(storageNode)) {
@@ -40,6 +61,12 @@ public class StorageClientService implements Runnable {
 
     }
 
+    /**
+     * 响应节点服务器的备份请求<br>
+     * 接收备份文件并更新文件信息
+     * @param ois
+     * @throws Exception
+     */
     private void receiveBackUp(ObjectInputStream ois) throws Exception {
         FileInfo fileInfo = receive(ois);
         System.out.println("======== 节点成功接收备份文件 [File Name：" +
@@ -50,6 +77,13 @@ public class StorageClientService implements Runnable {
 
     }
 
+    /**
+     * 响应客户端的上传请求<br>
+     * 将客户端上传的文件接收到相应的客户端文件夹下
+     * 并更新文件列表信息
+     * @param ois
+     * @throws Exception
+     */
     public void clientUpload(ObjectInputStream ois) throws Exception {
         FileInfo fileInfo = receive(ois);
         System.out.println("======== 节点成功接收上传文件 [File Name：" +
@@ -61,6 +95,13 @@ public class StorageClientService implements Runnable {
         backUpToBNode(fileInfo);
     }
 
+    /**
+     * 响应客户端的删除请求<br>
+     * 删除客户端文件夹下的文件
+     * 更新文件信息并通知备份节点删除备份文件
+     * @param ois
+     * @throws Exception
+     */
     public void clientRemove(ObjectInputStream ois) throws Exception {
         String client_name = ois.readUTF();
         FileInfo fileInfo = (FileInfo) ois.readObject();
@@ -69,30 +110,31 @@ public class StorageClientService implements Runnable {
             File local_file = storageNode.getFile_info_map().get(uuid).getFile();
             long size=local_file.length();
 
-        if (storageNode.getFile_info_map().keySet().contains(uuid) &&
-                fileInfo.getClient_name().equals(client_name) && local_file.delete()) {
-            System.out.println(client_name + " deleted " + uuid);
-            storageNode.getFile_info_map().remove(uuid);
-            storageNode.setFile_num(storageNode.getFile_info_map().size());
-            storageNode.setRestVolume(storageNode.getRestVolume()+size);
-            if (storageNode.equals(fileInfo.getMain_node())) {
-                Socket bSocket = new Socket(fileInfo.getSec_node()
-                        .getNodeIP(), fileInfo.getSec_node().getNodePort());
-                ObjectOutputStream oos = new ObjectOutputStream(bSocket.getOutputStream());
-                oos.writeChar('r');
-                oos.flush();
-                oos.writeUTF(client_name);
-                oos.flush();
-                oos.writeObject(fileInfo);
-                oos.flush();
-                oos.close();
-                bSocket.close();
+            if (storageNode.getFile_info_map().keySet().contains(uuid) &&
+                    fileInfo.getClient_name().equals(client_name) && local_file.delete()) {
+                System.out.println(client_name + " deleted " + uuid);
+                storageNode.getFile_info_map().remove(uuid);
+                storageNode.setFile_num(storageNode.getFile_info_map().size());
+                storageNode.setRestVolume(storageNode.getRestVolume()+size);
+                if (storageNode.equals(fileInfo.getMain_node())) {
+                    Socket bSocket = new Socket(fileInfo.getSec_node()
+                            .getNodeIP(), fileInfo.getSec_node().getNodePort());
+                    ObjectOutputStream oos = new ObjectOutputStream(bSocket.getOutputStream());
+                    oos.writeChar('r');
+                    oos.flush();
+                    oos.writeUTF(client_name);
+                    oos.flush();
+                    oos.writeObject(fileInfo);
+                    oos.flush();
+                    oos.close();
+                    bSocket.close();
+                }
             }
-        }
         }catch (NullPointerException e){
             System.out.println("no file found to remove");
         }
     }
+
 
     @Override
     public void run() {
@@ -126,6 +168,13 @@ public class StorageClientService implements Runnable {
         }
     }
 
+    /**
+     * clientUpload和receiveBackup的内部函数
+     * 接收文件
+     * @param ois
+     * @return
+     * @throws Exception
+     */
     private FileInfo receive(ObjectInputStream ois) throws Exception {
         FileInfo fileInfo=(FileInfo)ois.readObject();
         String file_uuid = fileInfo.getFile_id();
@@ -160,6 +209,13 @@ public class StorageClientService implements Runnable {
         return fileInfo;
     }
 
+    /**
+     * clientDownload和backoBnode的内部函数
+     * 发送文件
+     * @param file
+     * @param oos
+     * @throws Exception
+     */
     private void send(File file, ObjectOutputStream oos) throws Exception {
         FileInputStream fis=new FileInputStream(file);
         DataInputStream dis=new DataInputStream(fis);

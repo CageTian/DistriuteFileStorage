@@ -15,16 +15,30 @@ import java.util.Properties;
 /**
  * Created by CageTian on 2017/7/6.
  */
-public class FileClient  {
+public class FileClient implements FileHandler {
     private String serverIP;
     private int server_port;
     private String client_name;
 
+    /**
+     * 根据配置文件f对客户端进行初始化
+     *
+     * @param f
+     * @throws IOException
+     */
     private FileClient(File f) throws IOException {
         getProperties(f);
     }
 
-    public static void main(String[] args) throws Exception {
+    /**
+     * 客户端主函数，第一个参数为配置文件路径，第二参数是要执行的方法
+     * 之后的参数为传给相应方法的参数
+     *
+     * @param args
+     * @throws IOException
+     */
+
+    public static void main(String[] args) throws IOException {
         if (args.length < 3)
             System.out.println("usage:\nproperties_file -d file_uuid --------- download file in server" +
                     "\t\nproperties_file -r file_uuid -------- delete file in server" +
@@ -50,7 +64,62 @@ public class FileClient  {
 
     }
 
-    private void upload(String file_path) {
+    /**
+     * 实现客户端的删除功能，根据uuid访问FileServer服务器并接收服务器返回的FileInfo对象
+     * 根据该对象访问相应节点通知其删除文件
+     *
+     * @param uuid
+     * @see edu.dlut.software.cagetian.storagenode.StorageClientService
+     */
+    public void remove(String uuid) {
+        Socket socket = null;
+        FileInfo fileInfo = new FileInfo();
+        try {
+            socket = new Socket(serverIP, server_port);
+            fileInfo = getServerMes(socket, 'r', uuid + "#" + client_name);
+        } catch (Exception e) {
+            if (e instanceof NullPointerException)
+                System.err.println(uuid + " not found please check file uuid");
+            else
+                System.err.println("connection erro,please try again");
+            System.exit(-1);
+        }
+
+        StorageNode firstNode = fileInfo.getMain_node();
+        try {
+            socket = new Socket(firstNode.getNodeIP(), firstNode.getNodePort());
+            ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+            oos.writeChar('r');
+            oos.flush();
+            oos.writeUTF(client_name);
+            oos.flush();
+            oos.writeObject(fileInfo);
+            oos.flush();
+            oos.close();
+            System.out.println("success remove file: " + fileInfo.getFile_id());
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * 上传函数，参数为上传文件路径
+     * 先将文件压缩，将压缩后的文件信息发送给FileServer
+     * 接收FileServer返回的FileInfo
+     * 链接StorageNode服务器加密传输文件
+     *
+     * @param file_path
+     * @see CompressFileGZIP
+     * @see Tool
+     * @see edu.dlut.software.cagetian.storagenode.StorageClientService
+     */
+    public void upload(String file_path) {
         File file = new File(file_path);
         File z_file=CompressFileGZIP.doCompressFile(file_path);
         FileInfo fileInfo;
@@ -75,6 +144,14 @@ public class FileClient  {
         }
     }
 
+    /**
+     * upload 函数的内部函数
+     * 实现发送文件
+     * @param fileInfo
+     * @param file
+     * @param node
+     * @throws Exception
+     */
     private void send(FileInfo fileInfo, File file, StorageNode node) throws Exception {
         Socket socket = new Socket(node.getNodeIP(), node.getNodePort());
         ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
@@ -110,34 +187,20 @@ public class FileClient  {
 
     }
 
-    private void remove(String uuid) throws Exception {
-        Socket socket=new Socket(serverIP,server_port);
-        FileInfo fileInfo = new FileInfo();
-        try {
-            fileInfo = getServerMes(socket, 'r', uuid + "#" + client_name);
-        } catch (Exception e) {
-            if (e instanceof NullPointerException)
-                System.err.println(uuid + " not found please check file uuid");
-            else
-                System.err.println("connection erro,please try again");
-            System.exit(1);
-        }
-
-        StorageNode firstNode=fileInfo.getMain_node();
-        socket=new Socket(firstNode.getNodeIP(),firstNode.getNodePort());
-        ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
-        oos.writeChar('r');
-        oos.flush();
-        oos.writeUTF(client_name);
-        oos.flush();
-        oos.writeObject(fileInfo);
-        oos.flush();
-        oos.close();
-        socket.close();
-        System.out.println("success remove file: " + fileInfo.getFile_id());
-    }
-
-    private void download(String uuid, String file_path) {
+    /**
+     * 下载函数，第一个参数为文件uuid，第二个参数为需要储存的文件目录
+     * 根据uuid访问FileServer服务器并接收服务器返回的FileInfo对象
+     * 根据返回的对象访问储存节点发送下载请求
+     * 下载时进行解密
+     * 下载完成后进行解压
+     *
+     * @param uuid
+     * @param file_path
+     * @see UncompressFileGZIP
+     * @see Tool
+     * @see edu.dlut.software.cagetian.storagenode.StorageClientService
+     */
+    public void download(String uuid, String file_path) {
         File directory;
         Socket socket;
         FileInfo fileInfo;
@@ -168,6 +231,15 @@ public class FileClient  {
 
     }
 
+    /**
+     * download函数的内部函数
+     * 实现接收文件
+     * @param fileInfo
+     * @param uuid
+     * @param directory
+     * @param node
+     * @throws Exception
+     */
     private void receive(FileInfo fileInfo, String uuid, File directory,
                          StorageNode node) throws Exception {
         Socket socket = new Socket(node.getNodeIP(), node.getNodePort());
@@ -207,6 +279,16 @@ public class FileClient  {
         socket.close();
     }
 
+    /**
+     * download，upload，remove函数的内部函数
+     * 负责与FileServer服务器通信
+     * 并返回一个包含节点信息的FileServer对象
+     * @param socket
+     * @param ch
+     * @param uName
+     * @return
+     * @throws Exception
+     */
     private FileInfo getServerMes(Socket socket, char ch, String uName) throws Exception {
         DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
         ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
@@ -223,6 +305,12 @@ public class FileClient  {
 
     }
 
+    /**
+     * 读取配置文件对Client进行初始化
+     *
+     * @param prop_file
+     * @throws IOException
+     */
     private void getProperties(File prop_file) throws IOException {
         Properties pps = new Properties();
         InputStream in = new BufferedInputStream(new FileInputStream(prop_file));

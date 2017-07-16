@@ -7,13 +7,14 @@ import java.net.InetAddress;
 
 /**
  * Created by CageTian on 2017/7/7.
+ * 每隔一段时间将服务器的文件、存储等信息发送给服务器，并通知服务器节点正常运行
  */
 public class notifyServerService implements Runnable {
     private StorageNode storageNode;
     private int serverPort;
     private String message;
 
-    public notifyServerService(StorageNode storageNode, int serverPort) {
+    notifyServerService(StorageNode storageNode, int serverPort) {
         this.serverPort=serverPort;
         this.storageNode=storageNode;
         this.message=storageNode.getNodeName()+'#'+storageNode.getNodeIP()
@@ -33,7 +34,6 @@ public class notifyServerService implements Runnable {
                         message.getBytes().length,
                         InetAddress.getByName(storageNode.getFileServerIP()), serverPort);
                 ds.send(dp);
-//                System.out.println("send");
                 Thread.sleep(10000);
             }
         }catch (Exception e){
