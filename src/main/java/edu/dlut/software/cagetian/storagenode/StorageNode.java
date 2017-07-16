@@ -14,7 +14,7 @@ import java.util.Properties;
  * Created by CageTian on 2017/7/6.
  */
 public class StorageNode implements Serializable{
-    public static final long DEFAULT_VOLUME =107374182400L;
+    public static final long DEFAULT_VOLUME = 10737418240L;
     private static DecimalFormat df = null;
     static {
         // 设置数字格式，保留一位有效小数

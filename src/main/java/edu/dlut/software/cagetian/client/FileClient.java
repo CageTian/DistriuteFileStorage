@@ -25,25 +25,25 @@ public class FileClient  {
     }
 
     public static void main(String[] args) throws Exception {
-        if (args.length < 2)
-            System.out.println("usage:\n-d file_uuid --------- download file in server" +
-                    "\t\n-r file_uuid -------- delete file in server" +
-                    "\t\n-u file_path -------- upload file to server");
+        if (args.length < 3)
+            System.out.println("usage:\nproperties_file -d file_uuid --------- download file in server" +
+                    "\t\nproperties_file -r file_uuid -------- delete file in server" +
+                    "\t\nproperties_file -u file_path -------- upload file to server");
         else {
             FileClient fileClient = new FileClient(new File(
-                    "D:\\Projects\\Projects_JavaWeb\\DistriuteFileStorage\\src\\main\\resources\\client1.properties"));
-            switch (args[0]) {
+                    args[0]));
+            switch (args[1]) {
                 case "-d":
-                    fileClient.download(args[1], args[2]);
+                    fileClient.download(args[2], args[3]);
                     break;
                 case "-r":
-                    fileClient.remove(args[1]);
+                    fileClient.remove(args[2]);
                     break;
                 case "-u":
-                    fileClient.upload(args[1]);
+                    fileClient.upload(args[2]);
                     break;
                 default:
-                    System.err.println("no param like " + args[0]);
+                    System.err.println("no param like " + args[1]);
                     break;
             }
         }
@@ -58,7 +58,7 @@ public class FileClient  {
         try {
             socket = new Socket(serverIP, server_port);
             fileInfo = getServerMes(socket, 'u', file.getName() + "#" +
-                    String.valueOf(z_file.length()));
+                    String.valueOf(z_file.length()) + "#" + client_name);
             fileInfo.setFile_size(z_file.length());
             System.out.println(fileInfo);
         } catch (Exception e) {
@@ -102,7 +102,9 @@ public class FileClient  {
         oos.writeInt(-1);
         oos.flush();
         System.out.println();
-        System.out.println("======== 文件传输成功 ========"+file.length());
+        System.out.println("======== 文件传输成功 ======== file size:" + file.length());
+        System.out.println("UUID: " + fileInfo.getFile_id());
+
         oos.close();
         socket.close();
 
@@ -110,7 +112,16 @@ public class FileClient  {
 
     private void remove(String uuid) throws Exception {
         Socket socket=new Socket(serverIP,server_port);
-        FileInfo fileInfo = getServerMes(socket, 'r', uuid);
+        FileInfo fileInfo = new FileInfo();
+        try {
+            fileInfo = getServerMes(socket, 'r', uuid + "#" + client_name);
+        } catch (Exception e) {
+            if (e instanceof NullPointerException)
+                System.err.println(uuid + " not found please check file uuid");
+            else
+                System.err.println("connection erro,please try again");
+            System.exit(1);
+        }
 
         StorageNode firstNode=fileInfo.getMain_node();
         socket=new Socket(firstNode.getNodeIP(),firstNode.getNodePort());
@@ -123,6 +134,7 @@ public class FileClient  {
         oos.flush();
         oos.close();
         socket.close();
+        System.out.println("success remove file: " + fileInfo.getFile_id());
     }
 
     private void download(String uuid, String file_path) {
@@ -133,15 +145,20 @@ public class FileClient  {
 
             directory = new File(file_path);
             socket = new Socket(serverIP, server_port);
-            fileInfo = getServerMes(socket, 'd', uuid);
+            fileInfo = getServerMes(socket, 'd', uuid + "#" +
+                    client_name);
         } catch (Exception e) {
-            System.out.println("fail to connect server to get update information.please retry");
+            if (e instanceof NullPointerException)
+                System.err.println(uuid + " not found please check file uuid");
+            else
+                System.err.println("connection erro,please try again");
             return;
         }
         try {
             receive(fileInfo, uuid, directory, fileInfo.getMain_node());
         } catch (Exception e) {
             try {
+                System.err.println("fail to get file from main node,now using second node...");
                 receive(fileInfo, uuid, directory, fileInfo.getSec_node());
             } catch (Exception e1) {
                 e1.printStackTrace();

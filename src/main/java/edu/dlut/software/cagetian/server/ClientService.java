@@ -30,11 +30,12 @@ public class ClientService implements Runnable {
             ObjectOutputStream oos=new ObjectOutputStream(socket.getOutputStream());
             char request=dis.readChar();
             FileInfo fileInfo=null;
+            String[] info;
             String uuid_str;
             ArrayList<StorageNode> list = fileServer.getNode_info();
             switch (request){
                 case 'u'://upload
-                    String[] info = dis.readUTF().split("#");
+                    info = dis.readUTF().split("#");
                     long fileSize = Long.parseLong(info[1]);//get file size;
                     System.out.println(fileSize);
 
@@ -51,26 +52,35 @@ public class ClientService implements Runnable {
                         if (nrest1 > 0 && nrest2 > 0) {
                             list.get(0).setRestVolume(nrest1);
                             list.get(1).setRestVolume(nrest2);
-                            fileInfo = new FileInfo(UUID.randomUUID().toString(), info[0], fileSize, list.get(0), list.get(1));
+                            fileInfo = new FileInfo(UUID.randomUUID().toString(), info[0], info[2], fileSize, list.get(0), list.get(1));
                             fileServer.getFile_info().put(fileInfo.getFile_id(), fileInfo);
                             System.out.println(fileInfo.getFile_id());
                         }
                     } catch (IndexOutOfBoundsException e) {
-                        System.out.println("System not ready or have less than two nodes remain");
+                        System.err.println("System not ready or have less than two nodes remain");
                     }
                     //exception node not enough
                     break;
                 case 'd'://download
                     System.out.println("download");
-                    uuid_str = dis.readUTF();
+
+                    info = dis.readUTF().split("#");
+                    uuid_str = info[0];
                     fileInfo = fileServer.getFile_info().get(uuid_str);
+                    if (!fileInfo.getClient_name().equals(info[1])) {
+                        fileInfo = null;
+                    }
                     break;
                 case 'r'://remove
                     System.out.println("remove");
-                    uuid_str = dis.readUTF();
+                    info = dis.readUTF().split("#");
+                    uuid_str = info[0];
                     fileInfo = fileServer.getFile_info().get(uuid_str);
-                    fileServer.getFile_info().remove(uuid_str);
                     //recover the rest volume
+                    if (null == fileInfo || !fileInfo.getClient_name().equals(info[1])) {
+                        break;
+                    }
+                    fileServer.getFile_info().remove(uuid_str);
                     StorageNode n1 = fileInfo.getMain_node();
                     StorageNode n2 = fileInfo.getSec_node();
                     n1.setRestVolume(n1.getRestVolume() + fileInfo.getFile_size());
