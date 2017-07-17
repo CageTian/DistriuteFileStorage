@@ -11,6 +11,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
+ * 监控程序jsp所请求的Servlet
+ * 将得到的节点信息和文件信息返回给jsp
  * Created by CageTian on 2017/7/12.
  */
 @WebServlet(urlPatterns = "/MonitorServlet")

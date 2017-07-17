@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.Properties;
 
 /**
+ *  服务器节点主类，主要响应客户端请求
+ *  并隔一段时间向FileServer发送节点信息
  * Created by CageTian on 2017/7/6.
  */
 public class StorageNode implements Serializable{
@@ -80,14 +82,28 @@ public class StorageNode implements Serializable{
         return map;
     }
 
+    /**
+     * 隔一段时间发送节点信息给FileServer
+     */
     public void notifyServer() {
         new Thread(new notifyServerService(this, 3000)).start();
     }
 
+    /**
+     * 响应客户端的上传、下载、删除请求
+     * 及其他节点的备份请求
+     *
+     * @param socket
+     */
     public void clientService(Socket socket) {
         new Thread(new StorageClientService(this, socket)).start();
     }
 
+    /**
+     * 获取配置文件信息，主要用于节点的初始化
+     * @param prop_file
+     * @throws IOException
+     */
     private void getProperties(File prop_file) throws IOException {
         Properties pps = new Properties();
         InputStream in = new BufferedInputStream(new FileInputStream(prop_file));

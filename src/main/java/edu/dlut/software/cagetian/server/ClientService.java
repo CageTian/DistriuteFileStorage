@@ -12,6 +12,8 @@ import java.util.Comparator;
 import java.util.UUID;
 
 /**
+ * 该类为FileServer响应客户端请求的一个服务线程
+ * 将节点等信息封装进FileInfo并返回给客户端
  * Created by CageTian on 2017/7/7.
  */
 public class ClientService implements Runnable {
@@ -58,8 +60,7 @@ public class ClientService implements Runnable {
                         }
                     } catch (IndexOutOfBoundsException e) {
                         System.err.println("System not ready or have less than two nodes remain");
-                    }
-                    //exception node not enough
+                    }//exception node not enough
                     break;
                 case 'd'://download
                     System.out.println("download");

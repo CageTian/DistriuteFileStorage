@@ -1,4 +1,7 @@
-package edu.dlut.software.cagetian.monitor; /**
+package edu.dlut.software.cagetian.monitor;
+/**
+ * 监控程序的监听器
+ * 随FileServer启动而开始运行
  * Created by CageTian on 2017/7/12.
  */
 

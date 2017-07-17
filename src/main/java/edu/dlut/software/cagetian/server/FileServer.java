@@ -11,6 +11,10 @@ import java.util.HashMap;
 import java.util.Scanner;
 
 /**
+ * FileServer主类
+ * 负责响应客户端请求
+ * 接收节点信息报文
+ * 定时更新节点的状态和信息列表
  * Created by CageTian on 2017/7/6.
  */
 public class FileServer implements Serializable{
@@ -26,6 +30,12 @@ public class FileServer implements Serializable{
         node_info=new ArrayList<>();
     }
 
+    /**
+     * 将FileServer对象从内存序列化保存进文件
+     *
+     * @param path
+     * @param fileServer
+     */
     public static void saveMainClassInstance(String path, FileServer fileServer) {
         try {
             ObjectOutputStream out = new ObjectOutputStream
@@ -38,6 +48,10 @@ public class FileServer implements Serializable{
 
     }
 
+    /**
+     * 将FileServer对象从文中反序列化进内存
+     * @return
+     */
     public static FileServer getServerInstance() {
         try {
             ObjectInputStream in = new ObjectInputStream
@@ -73,6 +87,10 @@ public class FileServer implements Serializable{
 
     }
 
+    /**
+     * 监听节点发送的报文信息，定时更新节点的状态和节点信息列表
+     * @throws Exception
+     */
     public void runNodeACKListenner() throws Exception {
         new Thread(new NodeService(this)).start();
         new Thread(new CheckNodeService(this)).start();

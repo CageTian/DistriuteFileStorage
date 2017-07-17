@@ -7,6 +7,8 @@ import java.net.DatagramSocket;
 import java.util.ArrayList;
 
 /**
+ * 该类为FileServer的一个服务类
+ * 负责接收节点发来的信息并根据报文更新节点信息
  * Created by CageTian on 2017/7/7.
  */
 public class NodeService implements Runnable {

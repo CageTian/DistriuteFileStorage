@@ -8,6 +8,8 @@ import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 
 /**
+ * websocket类
+ * 用于信息的推送
  * Created by caget on 2017/7/14.
  */
 @ServerEndpoint("/MyWebSocketServlet")

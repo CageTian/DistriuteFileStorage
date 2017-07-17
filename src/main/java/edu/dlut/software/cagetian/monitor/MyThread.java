@@ -12,6 +12,8 @@ import static edu.dlut.software.cagetian.server.FileServer.getServerInstance;
 import static edu.dlut.software.cagetian.server.FileServer.saveMainClassInstance;
 
 /**
+ * 监听器的一个FileServer线程
+ * @see FileServer
  * Created by CageTian on 2017/7/12.
  */
 public class MyThread extends Thread{
