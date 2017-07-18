@@ -4,6 +4,7 @@ import edu.dlut.software.cagetian.FileInfo;
 import edu.dlut.software.cagetian.storagenode.StorageNode;
 
 import java.io.DataInputStream;
+import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -54,12 +55,15 @@ public class ClientService implements Runnable {
                         if (nrest1 > 0 && nrest2 > 0) {
                             list.get(0).setRestVolume(nrest1);
                             list.get(1).setRestVolume(nrest2);
-                            fileInfo = new FileInfo(UUID.randomUUID().toString(), info[0], info[2], fileSize, list.get(0), list.get(1));
+                            fileInfo = FileInfo.getServerInitInstance
+                                    (UUID.randomUUID().toString(), info[0],
+                                            info[2], fileSize, list.get(0), list.get(1));
                             fileServer.getFile_info().put(fileInfo.getFile_id(), fileInfo);
                             System.out.println(fileInfo.getFile_id());
                         }
                     } catch (IndexOutOfBoundsException e) {
                         System.err.println("System not ready or have less than two nodes remain");
+                        socket.close();
                     }//exception node not enough
                     break;
                 case 'd'://download
@@ -93,13 +97,18 @@ public class ClientService implements Runnable {
                     break;
 
             }
-
             oos.writeObject(fileInfo);
             oos.flush();
             dis.close();
             oos.close();
         }catch (Exception e){
             e.printStackTrace();
+        } finally {
+            try {
+                socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
     }

@@ -241,7 +241,7 @@
 
     <!-- Table Striped -->
     <div class="block-area" id="tableStriped">
-      <h3 class="block-title">Table Striped</h3>
+        <h3 class="block-title">File Infomation</h3>
       <div class="table-responsive overflow">
         <table class="tile table table-bordered table-striped">
           <thead>

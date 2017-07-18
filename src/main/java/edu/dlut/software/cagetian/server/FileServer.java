@@ -99,40 +99,14 @@ public class FileServer implements Serializable{
     public ArrayList<StorageNode> getNode_info() {
         return node_info;
     }
-
-    public void setNode_info(ArrayList<StorageNode> node_info) {
-        this.node_info = node_info;
-    }
-
-    public String getIp() {
-        return ip;
-    }
-
-    public void setIp(String ip) {
-        this.ip = ip;
-    }
-
     public int getPort() {
         return port;
     }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
-
     public HashMap<String, FileInfo> getFile_info() {
         return file_info;
     }
-
-    public void setFile_info(HashMap<String, FileInfo> file_info) {
-        this.file_info = file_info;
-    }
-
     public HashMap<String, Integer> getNode_statue() {
         return node_statue;
     }
 
-    public void setNode_statue(HashMap<String, Integer> node_statue) {
-        this.node_statue = node_statue;
-    }
 }

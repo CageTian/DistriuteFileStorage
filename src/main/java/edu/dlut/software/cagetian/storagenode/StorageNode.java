@@ -125,21 +125,6 @@ public class StorageNode implements Serializable{
         }
         return false;
     }
-    private String getFormatFileSize(long length) {
-        double size = ((double) length) / (1 << 30);
-        if(size >= 1) {
-            return df.format(size) + "GB";
-        }
-        size = ((double) length) / (1 << 20);
-        if(size >= 1) {
-            return df.format(size) + "MB";
-        }
-        size = ((double) length) / (1 << 10);
-        if(size >= 1) {
-            return df.format(size) + "KB";
-        }
-        return length + "B";
-    }
     public String getNodeName() {
         return nodeName;
     }
@@ -152,24 +137,13 @@ public class StorageNode implements Serializable{
         return nodeIP;
     }
 
-    public void setNodeIP(String nodeIP) {
-        this.nodeIP = nodeIP;
-    }
 
     public int getNodePort() {
         return nodePort;
     }
 
-    public void setNodePort(int nodePort) {
-        this.nodePort = nodePort;
-    }
-
     public String getRootFolder() {
         return rootFolder;
-    }
-
-    public void setRootFolder(String rootFolder) {
-        this.rootFolder = rootFolder;
     }
 
     public int getFile_num() {
@@ -192,18 +166,6 @@ public class StorageNode implements Serializable{
         return fileServerIP;
     }
 
-    public void setFileServerIP(String fileServerIP) {
-        this.fileServerIP = fileServerIP;
-    }
-
-    public int getFileServerPort() {
-        return fileServerPort;
-    }
-
-    public void setFileServerPort(int fileServerPort) {
-        this.fileServerPort = fileServerPort;
-    }
-
     public long getRestVolume() {
         return restVolume;
     }
@@ -216,7 +178,4 @@ public class StorageNode implements Serializable{
         return file_info_map;
     }
 
-    public void setFile_info_map(HashMap<String, FileInfo> file_info_map) {
-        this.file_info_map = file_info_map;
-    }
 }

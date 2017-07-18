@@ -21,13 +21,15 @@ public class FileInfo implements Serializable{
     public FileInfo() {
     }
 
-    public FileInfo(String file_id, String file_name, String client_name, long file_size, StorageNode main_node, StorageNode sec_node) {
-        this.file_id = file_id;
-        this.file_name = file_name;
-        this.file_size = file_size;
-        this.main_node = main_node;
-        this.sec_node = sec_node;
-        this.client_name = client_name;
+    public static FileInfo getServerInitInstance(String file_id, String file_name, String client_name, long file_size, StorageNode main_node, StorageNode sec_node) {
+        FileInfo f = new FileInfo();
+        f.file_id = file_id;
+        f.file_name = file_name;
+        f.file_size = file_size;
+        f.main_node = main_node;
+        f.sec_node = sec_node;
+        f.client_name = client_name;
+        return f;
     }
 
     /**
@@ -69,10 +71,6 @@ public class FileInfo implements Serializable{
         return file_name;
     }
 
-    public void setFile_name(String file_name) {
-        this.file_name = file_name;
-    }
-
     public long getFile_size() {
         return file_size;
     }
@@ -85,16 +83,8 @@ public class FileInfo implements Serializable{
         return main_node;
     }
 
-    public void setMain_node(StorageNode main_node) {
-        this.main_node = main_node;
-    }
-
     public StorageNode getSec_node() {
         return sec_node;
-    }
-
-    public void setSec_node(StorageNode sec_node) {
-        this.sec_node = sec_node;
     }
 
     public File getFile() {

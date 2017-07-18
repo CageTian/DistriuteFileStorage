@@ -23,8 +23,8 @@ public class FileClient implements FileHandler {
     /**
      * 根据配置文件f对客户端进行初始化
      *
-     * @param f
-     * @throws IOException
+     * @param f 配置文件
+     * @throws IOException 找不到配置文件异常
      */
     private FileClient(File f) throws IOException {
         getProperties(f);
@@ -202,7 +202,7 @@ public class FileClient implements FileHandler {
      */
     public void download(String uuid, String file_path) {
         File directory;
-        Socket socket;
+        Socket socket = null;
         FileInfo fileInfo;
         try {
 
@@ -215,6 +215,11 @@ public class FileClient implements FileHandler {
                 System.err.println(uuid + " not found please check file uuid");
             else
                 System.err.println("connection erro,please try again");
+            try {
+                socket.close();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
             return;
         }
         try {
