@@ -299,7 +299,6 @@
 
 <!-- Other -->
 <script src="js/calendar.min.js"></script> <!-- Calendar -->
-<script src="js/feeds.min.js"></script> <!-- News Feeds -->
 <!-- All JS functions -->
 <script src="js/functions.js"></script>
 </body>

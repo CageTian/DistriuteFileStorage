@@ -7,8 +7,10 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * FileServer主类
@@ -18,16 +20,17 @@ import java.util.Scanner;
  * Created by CageTian on 2017/7/6.
  */
 public class FileServer implements Serializable{
-    private ArrayList<StorageNode> node_info;
-    private HashMap<String,FileInfo>file_info;
-    private HashMap<String, Integer> node_statue;
+    private List<StorageNode> node_info;
+    private ConcurrentHashMap<String, FileInfo> file_info;
+    private ConcurrentHashMap<String, Integer> node_statue;
     private String ip;
     private int port;
     FileServer (int port){
         this.port=port;
-        node_statue=new HashMap<>();
-        file_info=new HashMap<>();
-        node_info=new ArrayList<>();
+        node_statue = new ConcurrentHashMap<>();
+        file_info = new ConcurrentHashMap<>();
+        node_info =
+                Collections.synchronizedList(new ArrayList<StorageNode>());
     }
 
     /**
@@ -96,16 +99,18 @@ public class FileServer implements Serializable{
         new Thread(new CheckNodeService(this)).start();
     }
 
-    public ArrayList<StorageNode> getNode_info() {
+    public List<StorageNode> getNode_info() {
         return node_info;
     }
     public int getPort() {
         return port;
     }
-    public HashMap<String, FileInfo> getFile_info() {
+
+    public ConcurrentHashMap<String, FileInfo> getFile_info() {
         return file_info;
     }
-    public HashMap<String, Integer> getNode_statue() {
+
+    public ConcurrentHashMap<String, Integer> getNode_statue() {
         return node_statue;
     }
 

@@ -7,9 +7,9 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -35,7 +35,7 @@ public class ClientService implements Runnable {
             FileInfo fileInfo=null;
             String[] info;
             String uuid_str;
-            ArrayList<StorageNode> list = fileServer.getNode_info();
+            List<StorageNode> list = fileServer.getNode_info();
             switch (request){
                 case 'u'://upload
                     info = dis.readUTF().split("#");
@@ -83,6 +83,7 @@ public class ClientService implements Runnable {
                     fileInfo = fileServer.getFile_info().get(uuid_str);
                     //recover the rest volume
                     if (null == fileInfo || !fileInfo.getClient_name().equals(info[1])) {
+                        fileInfo = null;
                         break;
                     }
                     fileServer.getFile_info().remove(uuid_str);

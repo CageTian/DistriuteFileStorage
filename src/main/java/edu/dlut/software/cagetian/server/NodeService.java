@@ -4,7 +4,7 @@ import edu.dlut.software.cagetian.storagenode.StorageNode;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 该类为FileServer的一个服务类
@@ -29,7 +29,7 @@ public class NodeService implements Runnable {
                 ds.receive(dp);
                 node_mes=new String(dp.getData(),0,dp.getLength());
                 String[]s_tmp=node_mes.split("#");
-                ArrayList<StorageNode> list=fileServer.getNode_info();
+                List<StorageNode> list = fileServer.getNode_info();
                 if(s_tmp.length>=5){
                     StorageNode storageNode=new StorageNode(s_tmp[0],s_tmp[1],
                             Integer.parseInt(s_tmp[2]),Long.parseLong(s_tmp[3])

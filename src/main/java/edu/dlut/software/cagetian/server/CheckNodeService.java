@@ -2,7 +2,7 @@ package edu.dlut.software.cagetian.server;
 
 import edu.dlut.software.cagetian.storagenode.StorageNode;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 该类为FileServer定时处理无消息节点的一个服务线程
@@ -21,7 +21,7 @@ public class CheckNodeService implements Runnable {
         try {
             while (true){
                 Thread.sleep(10000);
-                HashMap<String, Integer> map = fileServer.getNode_statue();
+                ConcurrentHashMap<String, Integer> map = fileServer.getNode_statue();
                 for (String k : map.keySet()) {
                     if(map.get(k)==1){
                         map.put(k,0);

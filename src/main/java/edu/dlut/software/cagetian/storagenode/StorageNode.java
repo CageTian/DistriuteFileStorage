@@ -7,8 +7,8 @@ import java.math.RoundingMode;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.text.DecimalFormat;
-import java.util.HashMap;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *  服务器节点主类，主要响应客户端请求
@@ -36,26 +36,26 @@ public class StorageNode implements Serializable{
     private long restVolume;
     private int file_num;
 
-    private HashMap<String,FileInfo> file_info_map;
+    private ConcurrentHashMap<String, FileInfo> file_info_map;
 
     public StorageNode(String nodeName, String nodeIP, int nodePort, long restVolume,int file_num) {
         this.nodeName = nodeName;
         this.nodeIP = nodeIP;
         this.nodePort = nodePort;
         this.restVolume = restVolume;
-        this.file_info_map = new HashMap<>();
+        this.file_info_map = new ConcurrentHashMap<>();
         this.file_num=file_num;
         this.volume=DEFAULT_VOLUME;
     }
 
     public StorageNode(File f) throws IOException {
         getProperties(f);
-        this.file_info_map = getAllFile(this.rootFolder, new HashMap<String,FileInfo>());
+        this.file_info_map = getAllFile(this.rootFolder, new ConcurrentHashMap<String, FileInfo>());
         this.file_num=file_info_map.size();
     }
     public StorageNode(String nodeName){
         this.nodeName=nodeName;
-        this.file_info_map = new HashMap<>();
+        this.file_info_map = new ConcurrentHashMap<>();
     }
 
     public static void main(String[] args) throws IOException {
@@ -69,7 +69,7 @@ public class StorageNode implements Serializable{
         }
     }
 
-    private HashMap<String, FileInfo> getAllFile(String rootFolder, HashMap<String, FileInfo> map) {
+    private ConcurrentHashMap<String, FileInfo> getAllFile(String rootFolder, ConcurrentHashMap<String, FileInfo> map) {
         File directory = new File(rootFolder);
         if (directory.isDirectory()) {
             for (File file : directory.listFiles())
@@ -174,7 +174,7 @@ public class StorageNode implements Serializable{
         this.restVolume = restVolume;
     }
 
-    public HashMap<String, FileInfo> getFile_info_map() {
+    public ConcurrentHashMap<String, FileInfo> getFile_info_map() {
         return file_info_map;
     }
 

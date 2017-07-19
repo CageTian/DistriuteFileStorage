@@ -160,7 +160,6 @@ public class FileClient implements FileHandler {
         oos.flush();
         oos.writeObject(fileInfo);
         oos.flush();
-
         System.out.println("======== 开始传输文件 ========");
         byte[] bytes = new byte[1024 * 128];
         int length;
